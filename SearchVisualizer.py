@@ -1,28 +1,37 @@
 import numpy as np
+import tkinter
+import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import time
 from AStar import astar
-from mazelib import Maze
-from mazelib.generate.DungeonRooms import DungeonRooms
 
-m = Maze()
-m.generator = DungeonRooms(10, 10)
-m.generate()
-m.generate_entrances(start_outer=False, end_outer=False)
+m = np.array([
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+[0, 1, 1, 1, 1, 1, 1, 0, 0, 1],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+[0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
 
-grid = m.grid
+grid = m
 
-robot = m.start
+robot = tuple([2, 3])
 
-human = m.start
+human = tuple([4, 5])
 
-humanGoal = m.end
+humanGoal = tuple([9, 9])
 
 print(human)
-humanPath = astar(grid, human, humanGoal)
+humanPath = astar(grid, human, humanGoal, 500)
 
 
-robotPath = astar(grid, robot, human)
+robotPath = astar(grid, robot, human, 4)
 
 # plot map and path
 
@@ -42,7 +51,7 @@ for value in range(len(humanPath[1])-1):
     if abs(robot[0] - human[0]) + abs(robot[1] - human[1]) >= 2 and len(robotPath)==2: 
         robot = (robotPath[0][1],robotPath[1][1])
         ax.plot(robotPath[1][0:min(len(robotPath[1]), 2)],robotPath[0][0:min(len(robotPath[1]), 2)], color = "green")
-    robotPath = astar(grid, robot, human)
+    robotPath = astar(grid, robot, human, 10)
     
     ax.scatter(robot[1],robot[0], marker = "*", color = "yellow", s = 200)
     ax.scatter(human[1],human[0], marker = "x", color = "red", s = 200)
