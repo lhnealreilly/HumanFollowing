@@ -39,32 +39,32 @@ class DynamicUpdate():
         import math
         import MultiAgentAPF
         self.on_launch()
-        testAPF = MultiAgentAPF.MultiAgentAPF(desired_follow_distance=1)
+        testAPF = MultiAgentAPF.MultiAgentAPF(desired_follow_distance=2, desired_follow_angle=3.14)
 
-        robot_vel_limit = .2 #This is a simulated version of the physical velocity constraints of the robot in dist/time step
-        static_obstacles = [[1, 1]] #Static obstacles in the environment
-        time_step = 1
+        robot_vel_limit = 2#This is a simulated version of the physical velocity constraints of the robot in dist/time step
+        static_obstacles = [[1, 1], [.2, 3]] #Static obstacles in the environment
+        time_step = .1
 
         testAPF.updateRobot([0, 0]) #Initial robot position
         testAPF.updateEnvironment([0, 1], static_obstacles, 0) #Initial environment
 
-        xdata = list([0, 0, 0])
+        xdata = list([0, 0])
         xdata.extend([p[0] for p in static_obstacles])
-        ydata = list([2, 0, 1])
+        ydata = list([2, 0])
         ydata.extend([p[0] for p in static_obstacles])
 
         for x in np.arange(0,100,time_step):
           robot_movement = testAPF.getRobotControlVelocity()
           length = math.sqrt(robot_movement[0] * robot_movement[0] + robot_movement[1] * robot_movement[1])
-          robot_movement = list(map(lambda x: x/length * (robot_vel_limit), robot_movement))
+          robot_movement = list(map(lambda x: x/length * (robot_vel_limit * time_step), robot_movement))
           testAPF.updateEnvironment([xdata[0], ydata[0]], static_obstacles, time_step) #Update environment
           # xdata[0] = xdata[0]
-          # ydata[0]
+          ydata[0] += .1
           self.on_running(xdata, ydata)
           testAPF.updateRobot([xdata[1] + robot_movement[0], ydata[1] + robot_movement[1]])
           xdata[1] = xdata[1] + robot_movement[0]
           ydata[1] = ydata[1] + robot_movement[1]
-          time.sleep(1)
+          time.sleep(time_step)
         return xdata, ydata
 
 d = DynamicUpdate()

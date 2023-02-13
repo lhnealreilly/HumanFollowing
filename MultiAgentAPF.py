@@ -66,8 +66,7 @@ class MultiAgentAPF:
     pass
 
   def getRobotControlVelocity(self):
-    desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][0] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
-
+    desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
     robot_velocity = map(lambda x: HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)) #Default velocity with only the spring attached between the robot and human
 
     for obstacle in self.static_obstacles:
