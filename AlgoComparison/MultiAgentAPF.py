@@ -71,7 +71,6 @@ class MultiAgentAPF:
 
     for obstacle in self.static_obstacles:
       robot_velocity = map(lambda x: OBSTACLE_K_VALUE * (x[0] - x[1]) + x[2], zip(obstacle, self.robot_position, robot_velocity))
-    
     return list(robot_velocity)
 
 

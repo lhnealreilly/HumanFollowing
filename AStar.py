@@ -5,7 +5,7 @@ import numpy as np
 def h(a, b):
     return np.sqrt((b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2)
 
-def astar(array, start, goal, limit):
+def astar(array, start, goal, limit=None):
     neighbors = [(0, 1), (0, -1), (1, 0), (-1, 0),
                  (1, 1), (1, -1), (-1, 1), (-1, -1)]
     closed_list = set()
@@ -16,7 +16,7 @@ def astar(array, start, goal, limit):
     heapq.heappush(open_heap, (f[start], start))
     while len(open_heap) > 0:
         current = heapq.heappop(open_heap)[1]
-        if current == goal or len(closed_list) > limit:
+        if current == goal or (limit is not None and len(closed_list) > limit):
             data = []
             while current in came_from:
                 data.append(current)
