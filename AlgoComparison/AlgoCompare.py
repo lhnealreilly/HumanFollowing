@@ -36,12 +36,14 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                 testAPF.updateEnvironment(human_path[0], [])
                 testAPF.updateRobot(robot_start) #Initial robot position
                 #Run the human path through the algorithm to get output velocities.
-                for point in human_path:
+                for i in range(len(human_path)):
+                    point = human_path[i]
                     robot_movement = testAPF.getRobotControlVelocity()
                     #Update the robot position based on ouput velocity
                     testAPF.updateRobot([testAPF.robot_position[0] + robot_movement[0], testAPF.robot_position[1] + robot_movement[1]])
                     robot.append(testAPF.robot_position)
-                    error.append(np.linalg.norm(testAPF.robot_position - point[0:2]))
+                    #Log the error between the current robot poisition and the desired robot posiiton at this time step
+                    error.append(np.linalg.norm(testAPF.robot_position - desired_position[i][0:2]))
                     testAPF.updateEnvironment(point, [])
                 results.append(["spring", i, sum(error)/len(error), max(error)])
             elif algorithm_num == "astar":
@@ -50,7 +52,7 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
             plt.arrow(x[0], x[1], math.sin(x[2]), math.cos(x[2]))
         plt.plot([x[0] for x in human_path], [x[1] for x in human_path], '--o', label='human', c='green')
         plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], '--o', label='desired', c='red')
-        plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], '--o', label='robot')
+        plt.plot([x[0] for x in robot], [x[1] for x in robot], '--o', label='robot', c='blue')
         if show:
             plt.show()
             
