@@ -10,7 +10,7 @@ import matplotlib.pyplot as plt
 desired_follow_distance = 2
 desired_follow_angle = math.pi
 
-robot_start = np.array([0, -1])
+robot_start = np.array([0, -2])
 
 def linalg_norm(data):
     a, b = data[0]
@@ -49,7 +49,7 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
             elif algorithm_num == "astar":
                 pass
         for x in human_path:
-            plt.arrow(x[0], x[1], math.sin(x[2]) * .3, math.cos(x[2]) * .3)
+            plt.arrow(x[0], x[1], math.sin(x[2]) * .3, math.cos(x[2]) * .3, head_width=.01)
         plt.plot([x[0] for x in human_path], [x[1] for x in human_path], '--o', label='human', c='green')
         plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], '--o', label='desired', c='red')
         plt.plot([x[0] for x in robot], [x[1] for x in robot], '--o', label='robot', c='blue')
