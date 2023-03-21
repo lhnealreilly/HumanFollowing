@@ -21,8 +21,8 @@ class HumanPathGenerator:
             # generate a random step size
             step = random.uniform(0, self.max_velocity / 1000 * time_step)
             # compute the new position of the human
-            x = path[-1][0] + step*math.cos(theta)
-            y = path[-1][1] + step*math.sin(theta)
+            x = path[-1][0] + step*math.sin(theta)
+            y = path[-1][1] + step*math.cos(theta)
             # add the new position and orientation to the path
             path.append([x, y, theta])
         return path
