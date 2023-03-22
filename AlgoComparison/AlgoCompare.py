@@ -38,12 +38,12 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                 #Run the human path through the algorithm to get output velocities.
                 for i in range(len(human_path)):
                     point = human_path[i]
+                    #Log the error between the current robot poisition and the desired robot posiiton at this time step
+                    error.append(np.linalg.norm(testAPF.robot_position - desired_position[i][0:2]))
                     robot_movement = testAPF.getRobotControlVelocity()
                     #Update the robot position based on ouput velocity
                     testAPF.updateRobot([testAPF.robot_position[0] + robot_movement[0], testAPF.robot_position[1] + robot_movement[1]])
                     robot.append(testAPF.robot_position)
-                    #Log the error between the current robot poisition and the desired robot posiiton at this time step
-                    error.append(np.linalg.norm(testAPF.robot_position - desired_position[i][0:2]))
                     testAPF.updateEnvironment(point, [])
                 results.append(["spring", i, sum(error)/len(error), max(error)])
                 plt.plot([x[0] for x in robot], [x[1] for x in robot], '--o', label='spring', c='blue')
@@ -52,9 +52,9 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                 error = [np.linalg.norm(robot_start - desired_position[0])]
                 for i in range(len(desired_position)):
                     point = tuple(desired_position[i])
+                    error.append(np.linalg.norm(robot_astar[-1] - desired_position[i][0:2]))
                     robot_path = astar([], tuple(robot_astar[-1]), point)
                     robot_astar.extend(list(zip(robot_path[0], robot_path[1])))
-                    error.append(np.linalg.norm(robot_astar[-1] - desired_position[i][0:2]))
                 results.append(["astar", i, sum(error)/len(error), max(error)])
                 plt.plot([x[0] for x in robot_astar], [x[1] for x in robot_astar], '--o', label='astar', c='yellow')
         for x in human_path:
