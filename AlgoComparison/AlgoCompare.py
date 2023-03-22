@@ -6,11 +6,10 @@ import VirtualSpring
 import HumanPathGenerator
 import numpy as np
 import matplotlib.pyplot as plt
+from AStarOpen import astar
 
 desired_follow_distance = 2
 desired_follow_angle = math.pi
-
-robot_start = np.array([0, -2])
 
 def linalg_norm(data):
     a, b = data[0]
@@ -28,6 +27,7 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
         human_path = np.array(hp.generatePath(time_step=100))
         #Generate the desired_position array for comparison
         desired_position = np.array(list(map(lambda x: np.array([x[0] + (desired_follow_distance * math.sin(desired_follow_angle + x[2])), x[1] + (desired_follow_distance * math.cos(desired_follow_angle + x[2]))]), human_path)))
+        robot_start = desired_position[0]
         robot = [robot_start]
         for algorithm_num in algorithm_nums:
             if algorithm_num == "spring":
@@ -46,13 +46,21 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                     error.append(np.linalg.norm(testAPF.robot_position - desired_position[i][0:2]))
                     testAPF.updateEnvironment(point, [])
                 results.append(["spring", i, sum(error)/len(error), max(error)])
+                plt.plot([x[0] for x in robot], [x[1] for x in robot], '--o', label='spring', c='blue')
             elif algorithm_num == "astar":
-                pass
+                robot_astar = [robot_start]
+                error = [np.linalg.norm(robot_start - desired_position[0])]
+                for i in range(len(desired_position)):
+                    point = tuple(desired_position[i])
+                    robot_path = astar([], tuple(robot_astar[-1]), point)
+                    robot_astar.extend(list(zip(robot_path[0], robot_path[1])))
+                    error.append(np.linalg.norm(robot_astar[-1] - desired_position[i][0:2]))
+                results.append(["astar", i, sum(error)/len(error), max(error)])
+                plt.plot([x[0] for x in robot_astar], [x[1] for x in robot_astar], '--o', label='astar', c='yellow')
         for x in human_path:
             plt.arrow(x[0], x[1], math.sin(x[2]) * .3, math.cos(x[2]) * .3, head_width=.01)
         plt.plot([x[0] for x in human_path], [x[1] for x in human_path], '--o', label='human', c='green')
         plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], '--o', label='desired', c='red')
-        plt.plot([x[0] for x in robot], [x[1] for x in robot], '--o', label='robot', c='blue')
         if show:
             plt.legend()
             plt.show()

@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-HUMAN_K_VALUE = .5 #The k-value of the virtual spring attached to the human
+HUMAN_K_VALUE = .6 #The k-value of the virtual spring attached to the human
 
 class VirtualSpring:
   def __init__(self, desired_follow_distance, desired_follow_angle=0) -> None:
