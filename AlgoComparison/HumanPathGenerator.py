@@ -5,7 +5,7 @@ import math
 #   Defines the random generation of human paths with some constraint options.
 #
 class HumanPathGenerator: 
-    def __init__(self, max_turn_raidus=(math.pi/20), max_velocity=1.31):
+    def __init__(self, max_turn_raidus=(math.pi/2), max_velocity=1.31):
         self.max_turn_raidus = max_turn_raidus
         self.max_velocity = max_velocity
     
@@ -15,7 +15,7 @@ class HumanPathGenerator:
         velocity = [0, 0]
         for i in range(path_length - 1):
             # generate a random turn angle
-            turn = random.gauss(0, self.max_turn_raidus/2)
+            turn = random.gauss(0, (self.max_turn_raidus * time_step / 1000)/2)
             # update the orientation of the human
             theta = path[-1][2] + turn
             # generate a random step size
