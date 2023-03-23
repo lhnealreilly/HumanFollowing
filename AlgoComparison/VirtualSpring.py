@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 HUMAN_K_VALUE = .5 #The k-value of the virtual spring attached to the human
-OBSTACLE_K_VALUE = .1 #The k-value of the virtual spring attached to the obstacles
+OBSTACLE_K_VALUE = .05 #The k-value of the virtual spring attached to the obstacles
 # BOUNDARY_K_VALUE = .3 #The k-value if the robot gets within a boundary distance near obstacles
 # BOUNDARY_DISTANCE = .2 #The distance in meters to switch to using the boubndary k-value
 

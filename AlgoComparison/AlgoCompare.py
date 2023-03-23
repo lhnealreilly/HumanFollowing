@@ -11,7 +11,7 @@ from AStarOpen import astar
 desired_follow_distance = 2
 desired_follow_angle = math.pi/4
 
-obstacle_count = 5
+obstacle_count = 2
 max_obstacle_size = .3
 min_obstacle_size = .1
 
@@ -60,7 +60,7 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                     robot.append(testAPF.robot_position)
                     testAPF.updateEnvironment(point, obstacles_array)
                 results.append(["spring", i, sum(error)/len(error), max(error), path_length(robot)])
-                plt.plot([x[0] for x in robot], [x[1] for x in robot], '--o', label='spring', c='blue')
+                plt.plot([x[0] for x in robot], [x[1] for x in robot], label='spring', c='blue')
             elif algorithm_num == "astar":
                 robot_astar = [robot_start]
                 error = [np.linalg.norm(robot_start - desired_position[0])]
@@ -68,16 +68,17 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                     point = tuple(desired_position[j])
                     error.append(np.linalg.norm(robot_astar[-1] - desired_position[j][0:2]))
                     robot_path = astar(obstacles_array, tuple(robot_astar[-1]), point, limit=20)
-                    robot_astar.extend(list(zip(robot_path[0], robot_path[1])))
+                    if len(robot_path) > 0:
+                        robot_astar.extend(list(zip(robot_path[0], robot_path[1])))
                 results.append(["astar", i, sum(error)/len(error), max(error), path_length(robot_astar)])
-                plt.plot([x[0] for x in robot_astar], [x[1] for x in robot_astar], '--o', label='astar', c='yellow')
+                plt.plot([x[0] for x in robot_astar], [x[1] for x in robot_astar], label='astar', c='yellow')
         for x in human_path:
             plt.arrow(x[0], x[1], math.sin(x[2]) * .3, math.cos(x[2]) * .3, head_width=.01)
         for obstacle in obstacles_array:
             circle1 = plt.Circle(obstacle[0:2], obstacle[2], color='r')
             plt.gca().add_patch(circle1)
-        plt.plot([x[0] for x in human_path], [x[1] for x in human_path], '--o', label='human', c='green')
-        plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], '--o', label='desired', c='red')
+        plt.plot([x[0] for x in human_path], [x[1] for x in human_path], label='human', c='green')
+        plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], label='desired', c='red')
         if show:
             plt.legend()
             plt.axis('equal')
