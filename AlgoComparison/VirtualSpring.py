@@ -1,7 +1,7 @@
 import math
 import numpy as np
 
-HUMAN_K_VALUE = .5 #The k-value of the virtual spring attached to the human
+HUMAN_K_VALUE = .4 #The k-value of the virtual spring attached to the human
 OBSTACLE_K_VALUE = .05 #The k-value of the virtual spring attached to the obstacles
 # BOUNDARY_K_VALUE = .3 #The k-value if the robot gets within a boundary distance near obstacles
 # BOUNDARY_DISTANCE = .2 #The distance in meters to switch to using the boubndary k-value
@@ -49,8 +49,11 @@ class VirtualSpring:
     self.robot_position = robot_position
     pass
 
-  def getRobotControlVelocity(self):
-    desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
+  def getRobotControlVelocity(self, point=None):
+    desired_position = point
+    if point == None:
+      desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
+  
     robot_velocity = np.array(list(map(lambda x: HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
     for obstacle in self.static_obstacles:
       obstacle_pos = obstacle[0:2]
