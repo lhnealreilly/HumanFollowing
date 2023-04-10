@@ -19,6 +19,11 @@ class DynamicUpdate():
         self.human_trace, = self.ax.plot([], [], 'b')
         self.robot_trace, = self.ax.plot([], [], 'r')
         self.astar_trace, = self.ax.plot([], [], 'y')
+
+        self.occlusion1, = self.ax.plot([], [], 'g')
+        self.occlusion2, = self.ax.plot([], [], 'g')
+        self.occlusion3, = self.ax.plot([], [], 'g')
+        self.occlusion4, = self.ax.plot([], [], 'g')
         #Autoscale on unknown axis and known lims on the other
         # self.ax.set_autoscaley_on(True)
         self.ax.set_xlim(self.min_x, self.max_x)
@@ -28,7 +33,7 @@ class DynamicUpdate():
         self.ax.grid()
         ...
 
-    def on_running(self, human_path, robot_path, astar_path):
+    def on_running(self, human_path, robot_path, astar_path, occlusions):
         #Update data (with the new _and_ the old points)
         self.human.set_xdata(human_path[-1][0])
         self.human.set_ydata(human_path[-1][1])
@@ -47,6 +52,18 @@ class DynamicUpdate():
 
         self.astar_trace.set_xdata([x[0] for x in astar_path])
         self.astar_trace.set_ydata([x[1] for x in astar_path])
+
+        self.occlusion1.set_xdata([x[0] for x in occlusions[0]])
+        self.occlusion1.set_ydata([x[1] for x in occlusions[0]])
+
+        self.occlusion2.set_xdata([x[0] for x in occlusions[1]])
+        self.occlusion2.set_ydata([x[1] for x in occlusions[1]])
+
+        self.occlusion3.set_xdata([x[0] for x in occlusions[2]])
+        self.occlusion3.set_ydata([x[1] for x in occlusions[2]])
+
+        self.occlusion4.set_xdata([x[0] for x in occlusions[3]])
+        self.occlusion4.set_ydata([x[1] for x in occlusions[3]])
         #Need both of these in order to rescale
         self.ax.relim()
         self.ax.autoscale_view()
@@ -78,13 +95,16 @@ class DynamicUpdate():
 
         index = math.floor(len(human_path)/2)
         x, y = [human_path[index][0] + (2 * math.sin(follow_angle + human_path[index][2])), human_path[index][1] + (2 * math.cos(follow_angle + human_path[index][2]))]
-        static_obstacles = [{'type': 'circle', 'position': [x, y, .3]}] #Static obstacles in the environment
+        static_obstacles = [{'type': 'line', 'position': np.array([[x - 3, y], [x  - 4, y]])}, {'type': 'line', 'position': np.array([[x - 1, y], [x  +0, y]])}] #Static obstacles in the environment
         obstacle = static_obstacles[0]
 
         desired_position = np.array(list(map(lambda x: np.array([x[0] + (2 * math.sin(follow_angle + x[2])), x[1] + (2 * math.cos(follow_angle + x[2]))]), human_path)))
-        # plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], label='desired', c='green', linewidth=1)
-        circle1 = plt.Circle([obstacle['position'][0], obstacle['position'][1]], obstacle['position'][2], color='r', label='obstacle')
-        plt.gca().add_patch(circle1)
+
+        arrow = plt.Arrow(*static_obstacles[0]['position'][0], *(static_obstacles[0]['position'][1] - static_obstacles[0]['position'][0]), label='wall', linewidth=0.01)
+        plt.gca().add_patch(arrow)
+
+        arrow = plt.Arrow(*static_obstacles[1]['position'][0], *(static_obstacles[1]['position'][1] - static_obstacles[1]['position'][0]), label='wall', linewidth=0.01)
+        plt.gca().add_patch(arrow)
         plt.legend()
         plt.show(block=False) 
         
@@ -107,7 +127,7 @@ class DynamicUpdate():
           if len(found_path) > 0:
             robot_path_astar.extend(list(zip(found_path[0], found_path[1])))
           robot_path.append([robot_path[-1][0] + robot_movement[0], robot_path[-1][1] + robot_movement[1]])
-          self.on_running(human_path[0:x], robot_path, robot_path_astar)
+          self.on_running(human_path[0:x], robot_path, robot_path_astar, testAPF.calc_occlusion_lines())
           time.sleep(time_step / 1000)
         return xdata, ydata
 
