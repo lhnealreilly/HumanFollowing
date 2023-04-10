@@ -15,6 +15,9 @@ obstacle_count = 2
 max_obstacle_size = .3
 min_obstacle_size = .1
 
+doorway1 = [[-5, 10], [-1, 10]]
+doorway2 = [[5, 10], [1, 10]]
+
 def linalg_norm(data):
     a, b = data[0]
     return numpy.linalg.norm(a - b, axis=1)
@@ -27,7 +30,7 @@ def path_length(path):
         length += math.sqrt((path[i + 1][0] - path[i][0])**2 + (path[i + 1][1] - path[i][1])**2)
     return length
 
-def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show, obstacles):
+def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show, obstacles, doorway):
     hp = HumanPathGenerator.HumanPathGenerator()
     results = []
     #For each trial to run
@@ -41,9 +44,12 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
         robot = [robot_start]
         #If obstacles are enabled add one half-way through the desired trajectory
         obstacles_array = []
+        if doorway:
+            obstacles_array.append({'type': 'line', 'position': doorway1})
+            obstacles_array.append({'type': 'line', 'position': doorway2})
         if obstacles:
             for x in range(obstacle_count):
-                obstacles_array.append([*desired_position[math.floor(len(desired_position) * ((x + 1) / (obstacle_count + 1)))], random.uniform(min_obstacle_size, max_obstacle_size)])
+                obstacles_array.append({'type': 'circle', 'position': [*desired_position[math.floor(len(desired_position) * ((x + 1) / (obstacle_count + 1)))], random.uniform(min_obstacle_size, max_obstacle_size)]})
         for algorithm_num in algorithm_nums:
             if algorithm_num == "spring":
                 testAPF = VirtualSpring.VirtualSpring(desired_follow_distance=desired_follow_distance, desired_follow_angle=desired_follow_angle)
@@ -77,8 +83,11 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
         for x in human_path:
             plt.arrow(x[0], x[1], math.sin(x[2]), math.cos(x[2]), head_width=.01)
         for obstacle in obstacles_array:
-            circle1 = plt.Circle(obstacle[0:2], obstacle[2], color='r')
-            plt.gca().add_patch(circle1)
+            if obstacle['type'] == 'circle':
+                circle1 = plt.Circle(obstacle['position'][0:2], obstacle['position'][2], color='r')
+                plt.gca().add_patch(circle1)
+            elif obstacle['type'] == 'line':
+                plt.plot([x[0] for x in obstacle['position']], [x[1] for x in obstacle['position']], c='r')
         plt.plot([x[0] for x in human_path], [x[1] for x in human_path], label='human', c='green')
         plt.plot([x[0] for x in desired_position], [x[1] for x in desired_position], label='desired', c='red')
 
@@ -99,16 +108,18 @@ def main():
     parser.add_argument('--output', type=str, help='where to save the output CSV file')
     parser.add_argument('--trials', type=int, default=10, help='how many trials to run')
     parser.add_argument('--show', default=True, action=argparse.BooleanOptionalAction)
-    parser.add_argument('--obstacles', default=True, action=argparse.BooleanOptionalAction)
+    parser.add_argument('--obstacles', default=False, action=argparse.BooleanOptionalAction)
+    parser.add_argument('--door', default=False, action=argparse.BooleanOptionalAction)
     args = parser.parse_args()
 
     obstacles = args.obstacles #Set this to enable or disable obstacles on the robot's trajectory
+    doorway = args.door
     algorithm_nums = args.algorithms
     output_file = args.output
     num_trials = args.trials
     show = args.show
 
-    test_path_following_algorithms(algorithm_nums, output_file, num_trials, show, obstacles)
+    test_path_following_algorithms(algorithm_nums, output_file, num_trials, show, obstacles, doorway)
 
 if __name__ == "__main__":
     main()

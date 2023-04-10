@@ -1,8 +1,9 @@
 import math
 import numpy as np
+from ObstacleHelpers import closestPointOnLine
 
 HUMAN_K_VALUE = .4 #The k-value of the virtual spring attached to the human
-OBSTACLE_K_VALUE = .05 #The k-value of the virtual spring attached to the obstacles
+OBSTACLE_K_VALUE = .1 #The k-value of the virtual spring attached to the obstacles
 # BOUNDARY_K_VALUE = .3 #The k-value if the robot gets within a boundary distance near obstacles
 # BOUNDARY_DISTANCE = .2 #The distance in meters to switch to using the boubndary k-value
 
@@ -53,11 +54,21 @@ class VirtualSpring:
     desired_position = point
     if point == None:
       desired_position = [self.human_trajectory[-1][0] + (self.desired_follow_distance * math.sin(self.desired_follow_angle + self.human_angle)), self.human_trajectory[-1][1] + (self.desired_follow_distance * math.cos(self.desired_follow_angle + self.human_angle))]
-  
+
     robot_velocity = np.array(list(map(lambda x: HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
+
+    # if(math.sqrt((self.robot_position[0] - self.human_trajectory[-1][0])**2 + (self.robot_position[1] - self.human_trajectory[-1][1])**2) > self.desired_follow_distance * 1.1):
+    #   robot_velocity += np.array(list(map(lambda x: HUMAN_K_VALUE/2 * (x[0] - x[1]), zip(self.human_trajectory[-1], self.robot_position)))) #Default velocity with only the spring attached between the robot and human
+    
     for obstacle in self.static_obstacles:
-      obstacle_pos = obstacle[0:2]
-      robot_velocity += np.array(list(self.repulsive_force(self.robot_position, obstacle_pos, obstacle[2])))
+      obstacle_type = obstacle['type']
+
+      obstacle_pos = obstacle['position']
+
+      if(obstacle_type == 'circle'):
+        robot_velocity += np.array(list(self.repulsive_force(self.robot_position, obstacle_pos, obstacle_pos[2])))
+      elif(obstacle_type == 'line'):
+        robot_velocity += np.array(list(self.repulsive_force(self.robot_position, closestPointOnLine(obstacle_pos[0], obstacle_pos[1], self.robot_position), 0)))
     return list(robot_velocity)
 
 

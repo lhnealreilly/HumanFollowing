@@ -1,5 +1,6 @@
 import heapq
 import numpy as np
+from ObstacleHelpers import closestPointOnLine
 
 
 def h(a, b):
@@ -17,6 +18,8 @@ def astar(obstacle_array: tuple[float, float, float], start, goal, grid_size=.1,
     heapq.heappush(open_heap, (f[start], start))
     while len(open_heap) > 0:
         current = heapq.heappop(open_heap)[1]
+        # if (limit is not None and len(closed_list) > limit):
+        #     return []
         if h(current, goal) <= (1.42 * grid_size) or (limit is not None and len(closed_list) > limit):
             data = []
             while current in came_from:
@@ -38,7 +41,10 @@ def astar(obstacle_array: tuple[float, float, float], start, goal, grid_size=.1,
             tentative_g_score = g[current] + h(current, neighbor)
             collision = False
             for obstacle in obstacle_array:
-                if h(list(neighbor), list(obstacle)) < obstacle[2]:
+                if obstacle['type'] == 'circle' and h(list(neighbor), list(obstacle['position'])) < obstacle['position'][2]:
+                    collision = True
+                    continue
+                if obstacle['type'] == 'line' and h(list(neighbor), list(closestPointOnLine(obstacle['position'][0], obstacle['position'][1], neighbor))) < grid_size:
                     collision = True
                     continue
             if collision:
