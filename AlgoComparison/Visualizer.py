@@ -35,14 +35,14 @@ class DynamicUpdate():
 
     def on_running(self, human_path, robot_path, astar_path, occlusions):
         #Update data (with the new _and_ the old points)
-        self.human.set_xdata(human_path[-1][0])
-        self.human.set_ydata(human_path[-1][1])
+        self.human.set_xdata([human_path[-1][0]])
+        self.human.set_ydata([human_path[-1][1]])
 
-        self.spring.set_xdata(robot_path[-1][0])
-        self.spring.set_ydata(robot_path[-1][1])
+        self.spring.set_xdata([robot_path[-1][0]])
+        self.spring.set_ydata([robot_path[-1][1]])
 
-        self.astar.set_xdata(astar_path[-1][0])
-        self.astar.set_ydata(astar_path[-1][1])
+        self.astar.set_xdata([astar_path[-1][0]])
+        self.astar.set_ydata([astar_path[-1][1]])
 
         self.human_trace.set_xdata([x[0] for x in human_path])
         self.human_trace.set_ydata([x[1] for x in human_path])
@@ -95,15 +95,15 @@ class DynamicUpdate():
 
         index = math.floor(len(human_path)/2)
         x, y = [human_path[index][0] + (2 * math.sin(follow_angle + human_path[index][2])), human_path[index][1] + (2 * math.cos(follow_angle + human_path[index][2]))]
-        static_obstacles = [{'type': 'line', 'position': np.array([[x - 3, y], [x  - 4, y]])}, {'type': 'line', 'position': np.array([[x - 1, y], [x  +0, y]])}] #Static obstacles in the environment
+        static_obstacles = [{'type': 'line', 'position': np.array([[x - 6, y], [x  - 4, y]])}, {'type': 'line', 'position': np.array([[x - 1, y], [x  +4, y]])}] #Static obstacles in the environment
         obstacle = static_obstacles[0]
 
         desired_position = np.array(list(map(lambda x: np.array([x[0] + (2 * math.sin(follow_angle + x[2])), x[1] + (2 * math.cos(follow_angle + x[2]))]), human_path)))
 
-        arrow = plt.Arrow(*static_obstacles[0]['position'][0], *(static_obstacles[0]['position'][1] - static_obstacles[0]['position'][0]), label='wall', linewidth=0.01)
+        arrow = plt.arrow(*static_obstacles[0]['position'][0], *(static_obstacles[0]['position'][1] - static_obstacles[0]['position'][0]), label='wall', linewidth=1, head_width=0.01)
         plt.gca().add_patch(arrow)
 
-        arrow = plt.Arrow(*static_obstacles[1]['position'][0], *(static_obstacles[1]['position'][1] - static_obstacles[1]['position'][0]), label='wall', linewidth=0.01)
+        arrow = plt.arrow(*static_obstacles[1]['position'][0], *(static_obstacles[1]['position'][1] - static_obstacles[1]['position'][0]), label='wall', linewidth=1, head_width=0.01)
         plt.gca().add_patch(arrow)
         plt.legend()
         plt.show(block=False) 

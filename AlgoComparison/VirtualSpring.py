@@ -3,9 +3,10 @@ import numpy as np
 from ObstacleHelpers import closestPointOnLine
 
 HUMAN_K_VALUE = .5 #The k-value of the virtual spring attached to the human
-HUMAN_BOUND_K_VALUE = .5 #The k-value of the virtual spring attached to the human
+HUMAN_BOUND_K_VALUE = .1 #The k-value of the virtual spring attached to the human
 OBSTACLE_K_VALUE = .1 #The k-value of the virtual spring attached to the obstacles
-OCCLUSION_CONSTANT = .5 #The k-value of the virtual spring attached to the occlusion lines
+OCCLUSION_CONSTANT = .4 #The k-value of the virtual spring attached to the occlusion lines
+HUMAN_REPULSIVE = .4
 # BOUNDARY_K_VALUE = .3 #The k-value if the robot gets within a boundary distance near obstacles
 # BOUNDARY_DISTANCE = .2 #The distance in meters to switch to using the boubndary k-value
 
@@ -32,13 +33,10 @@ class VirtualSpring:
     dot_product = np.dot(unit_vector_1, unit_vector_2)
     return np.arccos(dot_product)
 
-  def repulsive_force(self, point, circle_center, radius):
+  def repulsive_force(self, point, circle_center, radius, spring_k):
     distance = math.sqrt((point[0] - circle_center[0])**2 + (point[1] - circle_center[1])**2)
     angle = math.atan2(point[1] - circle_center[1], point[0] - circle_center[0])
-    force_magnitude = 1 / (distance - radius)
-    spring_k = OBSTACLE_K_VALUE
-    # if distance - radius - BOUNDARY_DISTANCE < 0:
-    #   spring_k = BOUNDARY_K_VALUE
+    force_magnitude = 1 / abs(distance - radius)
     force_x = force_magnitude * math.cos(angle) * spring_k
     force_y = force_magnitude * math.sin(angle) * spring_k
     return (force_x, force_y)
@@ -84,23 +82,29 @@ class VirtualSpring:
     if (self.desired_follow_angle - np.pi/12 < np.arctan2(*(self.robot_position - self.human_trajectory[-1][0:2])) - self.human_trajectory[-1][2] < self.desired_follow_angle + np.pi/12) and (self.desired_follow_distance - .25 < self.dist(self.human_trajectory[-1], self.robot_position) < self.desired_follow_distance + .25):
       robot_velocity = np.array(list(map(lambda x: HUMAN_BOUND_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
     else:
-      robot_velocity = np.array(list(map(lambda x: HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
+      robot_attractive = np.array(list(map(lambda x: HUMAN_K_VALUE * (x[0] - x[1]), zip(desired_position, self.robot_position)))) #Default velocity with only the spring attached between the robot and human
+      if(np.linalg.norm(robot_attractive) > 1):
+        robot_attractive /= np.linalg.norm(robot_attractive)
+      robot_velocity = robot_attractive
 
-    # if(math.sqrt((self.robot_position[0] - self.human_trajectory[-1][0])**2 + (self.robot_position[1] - self.human_trajectory[-1][1])**2) > self.desired_follow_distance * 1.1):
-    #   robot_velocity += np.array(list(map(lambda x: HUMAN_K_VALUE/2 * (x[0] - x[1]), zip(self.human_trajectory[-1], self.robot_position)))) #Default velocity with only the spring attached between the robot and human
-    
+    #Human repulsive force so the robot doesn't run into the human
+    if (self.dist(self.robot_position, self.human_trajectory[-1]) < self.desired_follow_distance / 2):
+      robot_velocity += np.array(list(self.repulsive_force(self.robot_position, self.human_trajectory[-1], .3, HUMAN_REPULSIVE)))
+
     for obstacle in self.static_obstacles:
       obstacle_type = obstacle['type']
 
       obstacle_pos = obstacle['position']
 
       if(obstacle_type == 'circle'):
-        robot_velocity += np.array(list(self.repulsive_force(self.robot_position, obstacle_pos, obstacle_pos[2])))
+        robot_velocity += np.array(list(self.repulsive_force(self.robot_position, obstacle_pos, obstacle_pos[2], OBSTACLE_K_VALUE)))
       elif(obstacle_type == 'line'):
-        robot_velocity += np.array(list(self.repulsive_force(self.robot_position, closestPointOnLine(obstacle_pos[0], obstacle_pos[1], self.robot_position), 0)))
+        robot_velocity += np.array(list(self.repulsive_force(self.robot_position, closestPointOnLine(obstacle_pos[0], obstacle_pos[1], self.robot_position), 0, OBSTACLE_K_VALUE)))
     
     for occlusion_line in self.calc_occlusion_lines():
-      robot_velocity += (occlusion_line[1] - occlusion_line[0]) / np.linalg.norm(occlusion_line) * -1 / self.dist(occlusion_line[0], self.robot_position) * OCCLUSION_CONSTANT
+      #If near an occluding obstacle
+      if(self.dist(occlusion_line[0], self.robot_position) < 1):
+        robot_velocity += (occlusion_line[1] - occlusion_line[0]) / np.linalg.norm(occlusion_line) * -1 / self.dist(occlusion_line[0], self.robot_position) * OCCLUSION_CONSTANT
 
 
     robot_velocity = robot_velocity if np.linalg.norm(robot_velocity) < self.vel_cap else robot_velocity / np.linalg.norm(robot_velocity) * self.vel_cap
