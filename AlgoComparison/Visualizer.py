@@ -84,7 +84,7 @@ class DynamicUpdate():
 
         follow_angle = math.pi/4
 
-        testAPF = VirtualSpring.VirtualSpring(desired_follow_distance=2, desired_follow_angle=follow_angle)
+        testAPF = VirtualSpring.VirtualSpring(desired_follow_distance=2, desired_follow_angle=follow_angle, config_file="config.ini")
 
         robot_vel_limit = 500#This is a simulated version of the physical velocity constraints of the robot in dist/time step
         
@@ -120,14 +120,13 @@ class DynamicUpdate():
         for x in range(1,200):
           robot_movement = testAPF.getRobotControlVelocity()
           length = math.sqrt(robot_movement[0] * robot_movement[0] + robot_movement[1] * robot_movement[1])
-        #   robot_movement = list(map(lambda x: x*time_step, robot_movement))
           testAPF.updateEnvironment(human_path[x], static_obstacles) #Update environment
           testAPF.updateRobot([robot_path[-1][0] + robot_movement[0], robot_path[-1][1] + robot_movement[1]])
-          found_path = astar(static_obstacles, tuple(robot_path_astar[-1]), [human_path[x][0] + (2 * math.sin(follow_angle + human_path[x][2])), human_path[x][1] + (2 * math.cos(follow_angle + human_path[x][2]))], limit=20)
+          found_path = astar(static_obstacles, tuple(robot_path_astar[-1]), [human_path[x][0] + (2 * math.sin(follow_angle + human_path[x][2])), human_path[x][1] + (2 * math.cos(follow_angle + human_path[x][2]))], limit=80)
           if len(found_path) > 0:
             robot_path_astar.extend(list(zip(found_path[0], found_path[1])))
           robot_path.append([robot_path[-1][0] + robot_movement[0], robot_path[-1][1] + robot_movement[1]])
-          self.on_running(human_path[0:x], robot_path, robot_path_astar, testAPF.calc_occlusion_lines())
+          self.on_running(human_path[0:x], robot_path, robot_path_astar, testAPF.calc_occlusion_lines(human_path[x]))
           time.sleep(time_step / 1000)
         return xdata, ydata
 

@@ -52,7 +52,7 @@ def test_path_following_algorithms(algorithm_nums, output_file, num_trials, show
                 obstacles_array.append({'type': 'circle', 'position': [*desired_position[math.floor(len(desired_position) * ((x + 1) / (obstacle_count + 1)))], random.uniform(min_obstacle_size, max_obstacle_size)]})
         for algorithm_num in algorithm_nums:
             if algorithm_num == "spring":
-                testAPF = VirtualSpring.VirtualSpring(desired_follow_distance=desired_follow_distance, desired_follow_angle=desired_follow_angle)
+                testAPF = VirtualSpring.VirtualSpring(desired_follow_distance=desired_follow_distance, desired_follow_angle=desired_follow_angle, config_file="config.ini")
                 error = [np.linalg.norm(robot_start - desired_position[0])]
                 testAPF.updateEnvironment(human_path[0], obstacles_array)
                 testAPF.updateRobot(robot_start) #Initial robot position
